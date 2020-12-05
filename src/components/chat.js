@@ -2,9 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 
 export default function Chat() {
-  useEffect(() => {
-    console.log('abdallah zakaraa')
-  }, [])
+
   return (
     <View style={styles.container}>
       <Text>Chat</Text>

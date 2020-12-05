@@ -3,18 +3,17 @@ import { StyleSheet, View, Text, TouchableOpacity, TextInput, Button } from 'rea
 import { useNavigation } from '@react-navigation/native';
 import { ChatContext } from '../context/chat';
 import AsyncStorage from '@react-native-community/async-storage';
-import io from 'socket.io-client';
+
 
 export default function UserLogin() {
-  const [flag, setFlag] = useState(false)
+  // const [flag, setFlag] = useState(false)
   const navigation = useNavigation();
   const context = useContext(ChatContext)
-  const socket = io('http://192.168.1.85:3000/chat');
+
 
   useEffect(() => {
     navigation.navigate('Rooms')
   }, [context.firstTime])
-
 
   useEffect(() => {
 
@@ -35,8 +34,7 @@ export default function UserLogin() {
       }
     }
     getStorage();
-    // socket.emit('createRoom',{roomName:'test', name:'Zeko', avatar:'test.test'})
-    // socket.emit('sendMessage', { roomID: '5fca781fd722dc2b19399e20', name: 'Zeko2', avatar: 'test.test', text: 'hellooooo2' })
+
   }, []);
 
 
