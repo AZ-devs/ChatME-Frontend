@@ -9,7 +9,6 @@ function ChatProvider(props) {
   const [avatar, setAvatar] = useState('')
   const [firstTime, setFirstTime] = useState(true)
   // const [activeRoom, setactiveRoom] = useState('')
-  // const [rooms, setRooms] = useState([])
   // const [messages, setMessages] = useState([])
 
   const state = { name, setName,avatar, setAvatar,firstTime,setFirstTime };
