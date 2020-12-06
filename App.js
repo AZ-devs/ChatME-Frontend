@@ -44,9 +44,9 @@ export default function App() {
           <Stack.Screen
             name="Chat"
             component={Chat}
-            options={({}) => ({
-              headerTitle: 'Chat',
-            })}
+            options={{
+              title: 'Chat'
+            }}
           />
         </Stack.Navigator>
         <StatusBar style="auto" />

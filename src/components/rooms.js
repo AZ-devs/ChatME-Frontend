@@ -1,10 +1,9 @@
-import io from 'socket.io-client';
 import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Modal, TouchableHighlight } from 'react-native';
 import { ChatContext } from '../context/chat';
 import { useNavigation } from '@react-navigation/native';
+import { socket } from '../context/socket'
 
-const socket = io('https://chatmebackend.herokuapp.com/chat');
 export default function Rooms() {
 
   const [roomName, setRoomName] = useState('')
@@ -21,20 +20,29 @@ export default function Rooms() {
     socket.on('lobby', (payload) => {
       context.setRooms(payload)
     })
-    socket.on('messages', (payload) => {
-      context.setMessages(payload);
-    })
     socket.on('joinLocked', (payload) => {
       setModalVisible(false);
       navigation.navigate('Chat');
+    })
+
+    socket.on('createdRoom', (payload) => {
+      console.log({ roomID: payload.roomID, name: payload.name, avatar: payload.avatar, password: payload.password })
+      socket.emit('join', { roomID: payload.roomID, name: payload.name, avatar: payload.avatar, password: payload.password })
+      context.setRoomID(payload.roomID)
+      // setTimeout(()=>{
+        // navigation.navigate('Chat');
+      // },5000)
+      // context.setRoomID(payload)
+      // navigation.navigate('Chat');
+
     })
   }, []);
 
   function createRoom() {
     if (roomName !== '') {
       socket.emit('createRoom', { roomName, password: myPassword, name: context.name, avatar: context.avatar })
-      navigation.navigate('Chat');
     }
+
   }
 
   function ListItem({ item }) {
@@ -45,7 +53,7 @@ export default function Rooms() {
             const payload = { roomID: item._id, name: context.name, avatar: context.avatar, password: '' }
             socket.emit('join', payload)
             context.setRoomID(item._id)
-            navigation.navigate('Chat');
+            // navigation.navigate('Chat');
           } else {
             context.setRoomID(item._id)
             setModalVisible(!modalVisible);
@@ -85,7 +93,7 @@ export default function Rooms() {
             <TouchableHighlight
               // style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
               onPress={() => {
-                const payload = { roomID, name: context.name, avatar: context.avatar, password }
+                const payload = { roomID:context.roomID, name: context.name, avatar: context.avatar, password }
                 socket.emit('join', payload)
               }}
             >

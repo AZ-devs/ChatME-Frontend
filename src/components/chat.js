@@ -1,23 +1,25 @@
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 import React, { useContext, useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Modal, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { ChatContext } from '../context/chat';
 import { Button } from 'react-native';
-const socket = io('https://chatmebackend.herokuapp.com/chat');
+import { socket } from '../context/socket'
 
 export default function Chat({ navigation }) {
   const [onlineVisible, setOnlineVisible] = useState(false);
-  const [pepole, setPepole] = useState([]);
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([])
 
   const context = useContext(ChatContext);
 
   useEffect(() => {
-    socket.on('sendMessage', (payload) => {
-      console.log('welcome')
-      let preMessages = context.messages;
-      preMessages.push({ name: payload.name, avatar: payload.avatar, text: payload.text });
-      context.setMessages(preMessages);
+
+    socket.on('messages', (payload) => {
+      setMessages(payload);
+    })
+
+    navigation.addListener('beforeRemove', (e) => {
+      socket.emit('exit', { name: context.name, roomID: context.roomID })
     })
   }, []);
 
@@ -26,36 +28,43 @@ export default function Chat({ navigation }) {
       headerRight: () => (
         <Button onPress={() => {
           setOnlineVisible(true)
-          getPepole()
         }
         } title="online" />
       ),
     });
-  }, [navigation, setOnlineVisible]);
+  }, [onlineVisible]);
 
-  function getPepole() {
+
+
+  function Online() {
     let currentRoom = context.rooms.filter(room => {
       return room._id == context.roomID
     })
-    setPepole(currentRoom[0].pepole);
+    console.log(currentRoom[0].pepole)
+    return currentRoom[0].pepole.map((person) => {
+      return (<View key={person.name} style={{ marginTop: 30 }}>
+        <Text>{person.name}</Text>
+      </View>)
+    })
   }
 
-  function ListItem({ item }) {
-    return (
-      <View style={{ marginTop: 30 }}>
-        <Text>{item.name}</Text>
-      </View>
-    );
-  }
+  function Messages() {
+    return messages.map((message, index) => {
+      // if(message.name === context.name){
+      return (
+        <View key={`${message.name}+${index}`} style={{ marginTop: 20 }}>
+          <Text style={{ color: 'green' }}>{message.name}</Text>
+          <Text>{message.text}</Text>
+        </View>
+      )
+      // }else{
+      //   <View key={`${message.name}+${index}`} style={{ marginTop: 20 }}>
+      //   <Text style={{color:'red'}}>{message.name}</Text>
+      //   <Text>{message.text}</Text>
+      // </View>
+      // }
 
-  function MessageCo() {
-    return (
-      <View style={{ marginTop: 20 }}>
-        <Text>{item.name}</Text>
-        <Text>{item.avatar}</Text>
-        <Text>{item.text}</Text>
-      </View>
-    );
+    })
   }
 
   return (
@@ -74,29 +83,21 @@ export default function Chat({ navigation }) {
           }}>
             <Text>X</Text>
           </TouchableOpacity>
-          <FlatList
-            data={pepole}
-            renderItem={({ item, index }) => <ListItem item={item} />}
-            keyExtractor={(item, index) => index.toString()}
-          />
+          <Online />
         </View>
       </Modal>
-      <FlatList
-        data={context.messages}
-        renderItem={({ item, index }) => <MessageCo item={item} />}
-        keyExtractor={(item, index) => index.toString()}
-      />
+      <Messages />
 
-        <TextInput required
-          style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
-          onChangeText={text => setMessage(text)}
-        />
-        <TouchableOpacity onPress={() => {
-          socket.emit('sendMessage', { name: context.name, avatar: context.avatar, text: message })
-        }}
-          style={styles.appButtonContainer}>
-          <Text style={styles.appButtonText}>Send</Text>
-        </TouchableOpacity>
+      <TextInput required
+        style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
+        onChangeText={text => setMessage(text)}
+      />
+      <TouchableOpacity onPress={() => {
+        socket.emit('sendMessage', { name: context.name, avatar: context.avatar, text: message, roomID: context.roomID })
+      }}
+        style={styles.appButtonContainer}>
+        <Text style={styles.appButtonText}>Send</Text>
+      </TouchableOpacity>
 
     </View>
   );
