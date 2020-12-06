@@ -4,6 +4,8 @@ import { StyleSheet, View, Text, Modal, TouchableOpacity, FlatList, TextInput } 
 import { ChatContext } from '../context/chat';
 import { Button } from 'react-native';
 import { socket } from '../context/socket'
+import { If } from 'react-if';
+import DismissKeyboard from '../util/keyboard';
 
 export default function Chat({ navigation }) {
   const [onlineVisible, setOnlineVisible] = useState(false);
@@ -20,6 +22,7 @@ export default function Chat({ navigation }) {
 
     navigation.addListener('beforeRemove', (e) => {
       socket.emit('exit', { name: context.name, roomID: context.roomID })
+      socket.off('messages');
     })
   }, []);
 
@@ -50,24 +53,32 @@ export default function Chat({ navigation }) {
 
   function Messages() {
     return messages.map((message, index) => {
-      // if(message.name === context.name){
-      return (
-        <View key={`${message.name}+${index}`} style={{ marginTop: 20 }}>
-          <Text style={{ color: 'green' }}>{message.name}</Text>
-          <Text>{message.text}</Text>
-        </View>
-      )
-      // }else{
-      //   <View key={`${message.name}+${index}`} style={{ marginTop: 20 }}>
-      //   <Text style={{color:'red'}}>{message.name}</Text>
-      //   <Text>{message.text}</Text>
-      // </View>
-      // }
-
+      if (message.name === context.name) {
+        return (
+          <View key={`${message.name}+${index}`} >
+            <If condition={index == 0 || messages[index - 1].name !== message.name}>
+              <Text style={{ color: 'green' }}>{message.name}</Text>
+              <Text style={{ color: 'green' }}>{message.avatar}</Text>
+            </If>
+            <Text>{message.text}</Text>
+          </View>
+        )
+      } else {
+        return (
+          <View key={`${message.name}+${index}`} >
+            <If condition={index == 0 || messages[index - 1].name !== message.name}>
+              <Text style={{ color: 'red' }}>{message.name}</Text>
+              <Text style={{ color: 'red' }}>{message.avatar}</Text>
+            </If>
+            <Text>{message.text}</Text>
+          </View>
+        )
+      }
     })
   }
 
   return (
+    // <DismissKeyboard>
     <View style={styles.container}>
       <Modal
         animationType="slide"
@@ -88,18 +99,20 @@ export default function Chat({ navigation }) {
       </Modal>
       <Messages />
 
-      <TextInput required
+      <TextInput required value={message}
         style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
         onChangeText={text => setMessage(text)}
       />
       <TouchableOpacity onPress={() => {
         socket.emit('sendMessage', { name: context.name, avatar: context.avatar, text: message, roomID: context.roomID })
+        setMessage('');
       }}
         style={styles.appButtonContainer}>
         <Text style={styles.appButtonText}>Send</Text>
       </TouchableOpacity>
 
     </View>
+    // </DismissKeyboard>
   );
 }
 

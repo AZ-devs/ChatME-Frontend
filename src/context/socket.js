@@ -1,3 +1,3 @@
 import io from 'socket.io-client';
 
-export const socket = io('http://192.168.1.129:3070/chat');
+export const socket = io('https://chatmebackend.herokuapp.com/chat');

@@ -30,11 +30,15 @@ export default function Rooms() {
       socket.emit('join', { roomID: payload.roomID, name: payload.name, avatar: payload.avatar, password: payload.password })
       context.setRoomID(payload.roomID)
       // setTimeout(()=>{
-        // navigation.navigate('Chat');
+      // navigation.navigate('Chat');
       // },5000)
       // context.setRoomID(payload)
       // navigation.navigate('Chat');
 
+    })
+    navigation.addListener('beforeRemove', (e) => {
+      socket.off('joinLocked');
+      socket.off('createdRoom');
     })
   }, []);
 
@@ -93,7 +97,7 @@ export default function Rooms() {
             <TouchableHighlight
               // style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
               onPress={() => {
-                const payload = { roomID:context.roomID, name: context.name, avatar: context.avatar, password }
+                const payload = { roomID: context.roomID, name: context.name, avatar: context.avatar, password }
                 socket.emit('join', payload)
               }}
             >
@@ -104,16 +108,21 @@ export default function Rooms() {
       </Modal>
 
       <Text>Rooms</Text>
-      <TextInput
+      <TextInput value={roomName}
         style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
         onChangeText={text => setRoomName(text)}
       />
-      <TextInput
+      <TextInput value={myPassword}
         style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
         onChangeText={text => setMyPassword(text)}
       />
       <TouchableOpacity
-        onPress={() => createRoom()}
+        onPress={() => {
+          createRoom()
+          setRoomName('');
+          setMyPassword('');
+        }
+        }
         style={styles.appButtonContainer}>
         <Text style={styles.appButtonText}>Start</Text>
       </TouchableOpacity>

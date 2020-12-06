@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keyboard, TouchableWithoutFeedback,KeyboardAvoidingView } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, StyleSheet } from 'react-native';
 
 export default DismissKeyboard = ({ children }) => {
   return (
@@ -13,3 +13,13 @@ export default DismissKeyboard = ({ children }) => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  }
+});
