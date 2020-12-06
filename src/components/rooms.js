@@ -11,7 +11,6 @@ export default function Rooms() {
   const [myPassword, setMyPassword] = useState('')
   const [password, setPassword] = useState('')
   const [modalVisible, setModalVisible] = useState(false);
-  const [roomID, setRoomID] = useState('');
 
   // socket
 
@@ -23,7 +22,7 @@ export default function Rooms() {
       context.setRooms(payload)
     })
     socket.on('messages', (payload) => {
-
+      context.setMessages(payload);
     })
     socket.on('joinLocked', (payload) => {
       setModalVisible(false);
@@ -45,9 +44,10 @@ export default function Rooms() {
           if (!item.islocked) {
             const payload = { roomID: item._id, name: context.name, avatar: context.avatar, password: '' }
             socket.emit('join', payload)
+            context.setRoomID(item._id)
             navigation.navigate('Chat');
           } else {
-            setRoomID(item._id)
+            context.setRoomID(item._id)
             setModalVisible(!modalVisible);
           }
         }}>
