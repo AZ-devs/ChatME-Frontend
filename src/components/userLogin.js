@@ -1,43 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, Button } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, Button, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ChatContext } from '../context/chat';
 import AsyncStorage from '@react-native-community/async-storage';
+import { socket } from '../context/socket'
+import * as Random from 'expo-random';
+import { uriToBlob, uploadToFirebase, imageHandler } from '../util/upload'
 
-
-export default function UserLogin() {
-  // const [flag, setFlag] = useState(false)
-  const navigation = useNavigation();
+export default function Login() {
   const context = useContext(ChatContext)
-
-
-  useEffect(() => {
-    navigation.navigate('Rooms')
-  }, [context.firstTime])
-
-  useEffect(() => {
-
-    const getStorage = async () => {
-      try {
-        const name = await AsyncStorage.getItem('name');
-        const avatar = await AsyncStorage.getItem('avatar');
-        console.log('User info', name, avatar)
-        await context.setName(name);
-        await context.setAvatar(avatar);
-        // console.log(context.name , context.avatar)
-        if(name){
-          context.setFirstTime(false);
-        }
-      }
-      catch {
-        console.log('Error get storage')
-      }
-    }
-    getStorage();
-
-  }, []);
-
-
 
   return (
     <View style={styles.container}>
@@ -47,16 +18,39 @@ export default function UserLogin() {
         onChangeText={text => context.setName(text)}
       />
       <Text style={{ marginTop: 25 }}>Avatar</Text>
-      <TextInput required
-        style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
-        onChangeText={text => context.setAvatar(text)}
-      />
+
+      <TouchableOpacity onPress={async () => {
+        const check = await imageHandler()
+        if (check) {
+          context.setAvatar(check);
+        }
+      }}>
+        <Image style={styles.image} source={{ uri: context.avatar }} />
+      </TouchableOpacity>
       <TouchableOpacity onPress={async () => {
         if (context.name !== '') {
-
-          navigation.navigate('Rooms');
-          await AsyncStorage.setItem('name', context.name)
-          await AsyncStorage.setItem('avatar', context.avatar)
+          socket.on('auth', async (payload) => {
+            if (payload.check) {
+              const fileExtension = payload.image.split('.').pop();
+              let uuid = Random.getRandomBytes(4);
+              let name = ''
+              uuid.forEach((item) => {
+                name += item;
+              })
+              const fileName = `${name}.${fileExtension}`;
+    
+              uriToBlob(payload.image)
+                .then((blob) => uploadToFirebase(blob, fileName, fileExtension)).then(async (uri) => {
+                  await AsyncStorage.setItem('name', context.name)
+                  context.setAvatar(uri)
+                  await AsyncStorage.setItem('avatar', uri)
+                  context.setFirstTime('Rooms')
+                })
+            } else {
+              console.log('exist name')
+            }
+          })
+          socket.emit('auth', { username: context.name, image: context.avatar })
         }
       }}
         style={styles.appButtonContainer}>
@@ -73,6 +67,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+  },
+  image: {
+    width: 400,
+    height: 200,
   },
   appButtonContainer: {
     elevation: 8,
