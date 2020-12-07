@@ -4,8 +4,6 @@ import Login from './userLogin'
 import Rooms from './rooms'
 import { ChatContext } from '../context/chat';
 import { If } from 'react-if'
-import { Text } from 'react-native';
-import { socket } from '../context/socket'
 
 
 
@@ -14,15 +12,14 @@ export default function Home() {
   // const [check, setCheck] = useState('loading')
 
   useEffect(() => {
-    socket.on('lobby', (payload) => {
-      context.setRooms(payload)
-    })
+
+
     const getStorage = async () => {
       try {
         const name = await AsyncStorage.getItem('name');
         const avatar = await AsyncStorage.getItem('avatar');
         console.log('User info', name, avatar)
-        
+
         if (name && avatar) {
           context.setFirstTime('Rooms')
           await context.setName(name);
@@ -42,10 +39,9 @@ export default function Home() {
   return (
     <>
       <If condition={context.firstTime == 'loading'}>
-        <Text>Test</Text>
       </If>
       <If condition={context.firstTime == 'Rooms'}>
-        <Rooms/>
+        <Rooms />
       </If>
       <If condition={context.firstTime == 'firstTime'}>
         <Login />

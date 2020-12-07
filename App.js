@@ -10,34 +10,44 @@ import { createStackNavigator } from '@react-navigation/stack';
 import ChatProvider from './src/context/chat';
 import { LogBox } from 'react-native'
 LogBox.ignoreLogs(['Setting a timer']);
+import { ThemeProvider } from 'react-native-elements';
 
+const theme = {
+  Button: {
+    titleStyle: {
+      color: 'red',
+    },
+  },
+};
 
 export default function App() {
   const Stack = createStackNavigator();
 
   return (
     <ChatProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{
-          headerStyle: {
-            backgroundColor: '#262229',
-          },
-          headerTintColor: '#837B79',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}>
-          <Stack.Screen name="Home" options={{
-            title: 'Home',
-          }} component={Home} options={{ headerShown: false }} />
-          {/* <Stack.Screen name="userLogin" options={{
+      <ThemeProvider them={theme}>
+
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{
+            headerStyle: {
+              backgroundColor: '#262229',
+            },
+            headerTintColor: '#837B79',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}>
+            <Stack.Screen name="Home" options={{
+              title: 'Home',
+            }} component={Home} options={{ headerShown: false }} />
+            {/* <Stack.Screen name="userLogin" options={{
             title: 'User Login',
           }} component={userLogin} options={{ headerShown: false }} />
 
           <Stack.Screen name="Rooms" options={{
             title: 'Rooms'
           }} component={Rooms} /> */}
-          {/* <Stack.Screen name="Chat" options={{
+            {/* <Stack.Screen name="Chat" options={{
             title: 'Chat',
             headerRight: () => (
               <Button
@@ -47,16 +57,18 @@ export default function App() {
               />
             ),
           }} component={Chat} /> */}
-          <Stack.Screen
-            name="Chat"
-            component={Chat}
-            options={{
-              title: 'Chat'
-            }}
-          />
-        </Stack.Navigator>
-        <StatusBar style="auto" />
-      </NavigationContainer>
+            <Stack.Screen
+              name="Chat"
+              component={Chat}
+              options={{
+                title: 'Chat'
+              }}
+            />
+          </Stack.Navigator>
+          <StatusBar style="auto" />
+        </NavigationContainer>
+      </ThemeProvider>
+
     </ChatProvider>
   );
 }
