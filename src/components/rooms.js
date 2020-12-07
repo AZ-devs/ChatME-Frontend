@@ -4,7 +4,7 @@ import { ChatContext } from '../context/chat';
 import { useNavigation } from '@react-navigation/native';
 import { socket } from '../context/socket'
 
-export default function Rooms() {
+export default function Rooms(props) {
 
   const [roomName, setRoomName] = useState('')
   const [myPassword, setMyPassword] = useState('')
@@ -17,9 +17,7 @@ export default function Rooms() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    socket.on('lobby', (payload) => {
-      context.setRooms(payload)
-    })
+
     socket.on('joinLocked', (payload) => {
       setModalVisible(false);
       navigation.navigate('Chat');
