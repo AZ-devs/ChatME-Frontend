@@ -1,33 +1,104 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, Button, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ChatContext } from '../context/chat';
 import AsyncStorage from '@react-native-community/async-storage';
 import { socket } from '../context/socket'
 import * as Random from 'expo-random';
 import { uriToBlob, uploadToFirebase, imageHandler } from '../util/upload'
+import { Image, Text, Input, Avatar, Button, Overlay } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon2 from 'react-native-vector-icons/MaterialIcons';
+import { If } from 'react-if'
 
 export default function Login() {
-  const context = useContext(ChatContext)
+  const [keyboardView, setKeyboardView] = useState(false)
+  const [visible, setVisible] = useState(false);
 
+  useEffect(() => {
+    socket.on('lobby', (payload) => {
+      context.setRooms(payload)
+    })
+    Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
+    Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
+
+    // cleanup function
+    return () => {
+      Keyboard.removeListener("keyboardDidShow", _keyboardDidShow);
+      Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
+    };
+  }, [])
+
+  const _keyboardDidShow = () => {
+    setKeyboardView(true)
+  }
+  const _keyboardDidHide = () => {
+    setKeyboardView(false)
+  }
+  const context = useContext(ChatContext)
+  {/* <View style={styles.inner}>
+        <Text style={styles.header}>Header</Text>
+        <TextInput placeholder="Username" style={styles.textInput} />
+        <View style={styles.btnContainer}>
+          <Button title="Submit" onPress={() => null} />
+        </View>
+      </View> */}
   return (
-    <View style={styles.container}>
-      <Text style={{ marginTop: 25 }}>Name</Text>
-      <TextInput
+
+
+
+    < KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.container} >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <If condition={!keyboardView}>
+            <Image
+              source={{ uri: 'https://www.freelogodesign.org/download/file?id=12b62204-dd65-4e69-9ed6-a6b59552af05_200x200.png' }}
+              style={{ marginTop: 20, width: 200, height: 200 }}
+            />
+          </If>
+
+          <View style={styles.form}>
+            <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={async () => {
+              const check = await imageHandler()
+              if (check) {
+                context.setAvatar(check);
+              }
+            }}>
+              {/* <Image style={styles.image} source={{ uri: context.avatar }} /> */}
+              <Avatar
+                size={180}
+                rounded
+                source={{
+                  uri:
+                    context.avatar,
+                }}
+              >
+              </Avatar>
+              <Icon2
+                name='mode-edit'
+                size={24}
+                color='#D63C30'
+              />
+            </TouchableOpacity>
+            <Input containerStyle={{ width: 300, marginTop: 30 }}
+              placeholder='Username'
+              onChangeText={text => context.setName(text)}
+              leftIcon={
+                <Icon
+                  name='user'
+                  size={24}
+                  color='#262229'
+                />
+              }
+            />
+          </View>
+          {/* <TextInput
         style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
         onChangeText={text => context.setName(text)}
-      />
-      <Text style={{ marginTop: 25 }}>Avatar</Text>
+      /> */}
+          {/* <Text style={{ marginTop: 25 }}>Avatar</Text> */}
 
-      <TouchableOpacity onPress={async () => {
-        const check = await imageHandler()
-        if (check) {
-          context.setAvatar(check);
-        }
-      }}>
-        <Image style={styles.image} source={{ uri: context.avatar }} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={async () => {
+          {/* <TouchableOpacity onPress={async () => {
         if (context.name !== '') {
           socket.on('auth', async (payload) => {
             if (payload.check) {
@@ -38,7 +109,7 @@ export default function Login() {
                 name += item;
               })
               const fileName = `${name}.${fileExtension}`;
-    
+
               uriToBlob(payload.image)
                 .then((blob) => uploadToFirebase(blob, fileName, fileExtension)).then(async (uri) => {
                   await AsyncStorage.setItem('name', context.name)
@@ -55,18 +126,74 @@ export default function Login() {
       }}
         style={styles.appButtonContainer}>
         <Text style={styles.appButtonText}>Start</Text>
-      </TouchableOpacity>
-    </View>
+      </TouchableOpacity> */}
+          <Button
+            title="Go Online"
+            raised
+            buttonStyle={{ backgroundColor: '#262229', width: 180, height: 50 }}
+            containerStyle={{ marginBottom: 20 }}
+            titleStyle={{ color: '#F4EFED', fontSize: 20 }}
+            onPress={async () => {
+              if (context.name !== '') {
+                socket.on('auth', async (payload) => {
+                  if (payload.check) {
+                    const fileExtension = payload.image.split('.').pop();
+                    let uuid = Random.getRandomBytes(4);
+                    let name = ''
+                    uuid.forEach((item) => {
+                      name += item;
+                    })
+                    const fileName = `${name}.${fileExtension}`;
+
+                    uriToBlob(payload.image)
+                      .then((blob) => uploadToFirebase(blob, fileName, fileExtension)).then(async (uri) => {
+                        await AsyncStorage.setItem('name', context.name)
+                        context.setAvatar(uri)
+                        await AsyncStorage.setItem('avatar', uri)
+                        context.setFirstTime('Rooms')
+                      })
+                  } else {
+                    setVisible(true)
+                  }
+                })
+                socket.emit('auth', { username: context.name, image: context.avatar })
+              }
+            }}
+          />
+          <Overlay overlayStyle={{ width: 250, height: 100, borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={visible} onBackdropPress={() => { setVisible(false) }}>
+            <View style={{alignItems:'center'}}>
+
+              <View style={{ flexDirection: 'row', border: '' }}>
+                <Text style={{ color: '#F4EFED', fontWeight: 'bold', fontSize: 20 }}>{context.name} </Text>
+                <Text style={{ fontSize: 20, color: '#F4EFED' }}>already exist</Text>
+              </View>
+              <Button
+                title='Close'
+                buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40,marginTop:10 }}
+                onPress={() => { setVisible(false) }}
+                titleStyle={{ color: '#F4EFED', fontSize: 20 }}
+              />
+            </View>
+          </Overlay>
+        </View >
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView >
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4EFED',
+    alignItems: 'center',
+    // padding: 40,
+    justifyContent: 'space-between',
+    // marginTop: 0,
+  },
+  form: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
   },
   image: {
     width: 400,

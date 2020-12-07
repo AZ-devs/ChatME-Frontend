@@ -48,9 +48,9 @@ export const imageHandler = async () => {
     }
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      // allowsEditing: true,
-      // aspect: [4, 3],
-      // quality: 1,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
     });
 
     if (!result.cancelled) {

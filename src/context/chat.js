@@ -5,7 +5,7 @@ export const ChatContext = React.createContext();
 function ChatProvider(props) {
 
   const [name, setName] = useState('')
-  const [avatar, setAvatar] = useState('https://upload.wikimedia.org/wikipedia/commons/7/70/User_icon_BLACK-01.png')
+  const [avatar, setAvatar] = useState('https://devtalk.blender.org/uploads/default/original/2X/c/cbd0b1a6345a44b58dda0f6a355eb39ce4e8a56a.png')
   const [firstTime, setFirstTime] = useState('loading')
   const [rooms, setRooms] = useState([])
   const [roomID, setRoomID] = useState('');
