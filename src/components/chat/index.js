@@ -36,7 +36,7 @@ export default function Chat({ navigation }) {
 
     Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
     Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
-    context.setLoading(false)
+    // context.setLoading(false)
     return () => {
       context.setMessages([])
       Keyboard.removeListener("keyboardDidShow", _keyboardDidShow);
@@ -103,7 +103,7 @@ export default function Chat({ navigation }) {
           barStyle="light-content" // or directly
           rightComponent={<OnlineP />}
           leftComponent={<Back />}
-          centerComponent={{ text: 'Rooms', style: { color: '#F4EFED', fontSize: 24 } }}
+          centerComponent={{ text: context.joinedRoom, style: { color: '#F4EFED', fontSize: 24 } }}
           containerStyle={{
             backgroundColor: '#262229',
             justifyContent: 'space-around',

@@ -16,6 +16,7 @@ export default function Rooms(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [visible, setVisible] = useState(false);
   const [checked, setChecked] = useState(false)
+  const [wrongPassword, setWrongPassword] = useState(false)
 
   // socket
 
@@ -23,7 +24,7 @@ export default function Rooms(props) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    socket.emit('rooms',{})
+    socket.emit('rooms', {})
     socket.on('lobby', (payload) => {
       context.setRooms(payload)
     })
@@ -32,15 +33,24 @@ export default function Rooms(props) {
       navigation.navigate('Chat');
     })
 
+    socket.on('wrongPass', () => {
+      setWrongPassword(true);
+    })
+
     socket.on('createdRoom', (payload) => {
       socket.emit('join', { roomID: payload.roomID, name: payload.name, avatar: payload.avatar, password: payload.password })
       context.setRoomID(payload.roomID)
     })
-    navigation.addListener('beforeRemove', (e) => {
+    // navigation.addListener('beforeRemove', (e) => {
+    //   socket.off('joinLocked');
+    //   socket.off('createdRoom');
+    // })
+
+    return () => {
       socket.off('joinLocked');
       socket.off('createdRoom');
-    })
-    context.setLoading(false)
+    };
+    // context.setLoading(false)
   }, []);
 
   function createRoom() {
@@ -52,9 +62,10 @@ export default function Rooms(props) {
   function List({ item }) {
     return (
       <View style={{ flex: 1, marginTop: 20, }}>
-        <ListItem underlayColor='#F4EFED' containerStyle={{ backgroundColor: '#F4EFED',alignItems:'flex-end',borderRadius:40,borderColor:'#262229',borderBottomWidth:2.32 }} onPress={() => {
+        <ListItem underlayColor='#F4EFED' containerStyle={{ backgroundColor: '#F4EFED', alignItems: 'flex-end', borderRadius: 40, borderColor: '#262229', borderBottomWidth: 2.32 }} onPress={() => {
+          context.setJoinedRoom(item.name)
           if (!item.islocked) {
-            context.setLoading(true)
+            // context.setLoading(true)
             const payload = { roomID: item._id, name: context.name, avatar: context.avatar, password: '' }
             socket.emit('join', payload)
             context.setRoomID(item._id)
@@ -63,22 +74,22 @@ export default function Rooms(props) {
             setModalVisible(!modalVisible);
           }
         }}>
-          <ListItem.Content style={{ alignItems: 'flex-start' }}>
-          <Icon
-              name={item.islocked?'lock':'unlock'}
+          <ListItem.Content style={{flex:0.1, alignItems: 'flex-start' }}>
+            <Icon
+              name={item.islocked ? 'lock' : 'unlock'}
               type='font-awesome'
               color='#D63C30'
               onPress={() => setVisible(false)}
             />
           </ListItem.Content>
-          <ListItem.Content style={{ alignItems: 'center', }}>
-            <ListItem.Title style={{ color: '#262229',fontSize:20,fontWeight:'bold' }}>{item.name}</ListItem.Title>
+          <ListItem.Content style={{flex:0.8, alignItems: 'center', }}>
+            <ListItem.Title style={{ color: '#262229', fontSize: 20, fontWeight: 'bold' }}>{item.name}</ListItem.Title>
           </ListItem.Content>
-          <ListItem.Content style={{ alignItems: 'flex-end' }}>
+          <ListItem.Content style={{flex:0.1, alignItems: 'flex-end' }}>
             <Badge
-              badgeStyle={{ backgroundColor: '#262229', width: 35, height: 30,borderWidth:1.5,borderColor:'#837B79' }}
+              badgeStyle={{ backgroundColor: '#262229', width: 35, height: 30, borderWidth: 1.5, borderColor: '#837B79' }}
               value={item.pepole.length}
-              textStyle={{ color: '#F4EFED', fontSize: 18,fontWeight:'bold' }}
+              textStyle={{ color: '#F4EFED', fontSize: 18, fontWeight: 'bold' }}
               containerStyle={{ marginTop: 0 }}
             />
           </ListItem.Content>
@@ -89,7 +100,7 @@ export default function Rooms(props) {
 
   function AddRoom() {
     return (
-      <TouchableHighlight underlayColor='transparent'  onPress={() => setVisible(true)}>
+      <TouchableHighlight underlayColor='transparent' onPress={() => setVisible(true)}>
         <Icon
           name='add-circle'
           color='#F4EFED'
@@ -154,8 +165,9 @@ export default function Rooms(props) {
             title='Create'
             buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 10 }}
             onPress={() => {
-              context.setLoading(true);
+              // context.setLoading(true);
               createRoom()
+              context.setJoinedRoom(roomName)
               setRoomName('');
               setMyPassword('');
               setChecked(false);
@@ -166,7 +178,10 @@ export default function Rooms(props) {
         </View>
       </Overlay>
 
-      <Overlay overlayStyle={{ borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={modalVisible} onBackdropPress={() => { setModalVisible(false) }}>
+      <Overlay overlayStyle={{ borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={modalVisible} onBackdropPress={() => {
+        setModalVisible(false)
+        setWrongPassword(false)
+      }}>
         <View style={{ alignItems: 'center' }}>
 
           <View style={{ justifyContent: 'space-between', flexDirection: 'row', alignSelf: 'stretch' }}>
@@ -176,22 +191,26 @@ export default function Rooms(props) {
               name='close'
               type='font-awesome'
               color='#D63C30'
-              onPress={() => setModalVisible(false)}
+              onPress={() => {
+                setModalVisible(false)
+                setWrongPassword(false)
+              }}
             />
           </View>
           <Input inputStyle={{ color: '#F4EFED', textDecorationLine: 'none' }} containerStyle={{ width: 300, marginTop: 30 }}
             placeholder='Password'
             onChangeText={text => setPassword(text)}
           />
-
+          <If condition={wrongPassword}>
+            <Text style={{ color: 'red' }}>Wrong Password</Text>
+          </If>
           <Button
             title='Join'
             buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 10 }}
             onPress={() => {
-              context.setLoading(true)
               const payload = { roomID: context.roomID, name: context.name, avatar: context.avatar, password }
               socket.emit('join', payload)
-              setModalVisible(false)
+              // setModalVisible(false)
             }}
             titleStyle={{ color: '#F4EFED', fontSize: 20 }}
           />
@@ -199,7 +218,7 @@ export default function Rooms(props) {
       </Overlay>
 
       {context.rooms ? <FlatList
-        style={{ alignSelf: 'stretch',backgroundColor:'#F4EFED',padding:10 }}
+        style={{ alignSelf: 'stretch', backgroundColor: '#F4EFED', padding: 10 }}
         data={context.rooms}
         renderItem={({ item }) => <List item={item} />}
         keyExtractor={(item) => item._id.toString()}

@@ -114,7 +114,7 @@ export default function Login() {
               if (context.name !== '') {
                 socket.on('auth', async (payload) => {
                   if (payload.check) {
-                    context.setLoading(true)
+                    // context.setLoading(true)
                     const fileExtension = payload.image.split('.').pop();
                     let uuid = Random.getRandomBytes(4);
                     let name = ''
@@ -138,8 +138,8 @@ export default function Login() {
               }
             }}
           />
-          <Overlay overlayStyle={{ width: 250, height: 100, borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={visible} onBackdropPress={() => { setVisible(false) }}>
-            <View style={{ alignItems: 'center' }}>
+          <Overlay  overlayStyle={{ width: 280, height: 150, borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={visible} onBackdropPress={() => { setVisible(false) }}>
+            <View style={{ alignItems: 'center', }}>
 
               <View style={{ flexDirection: 'row', border: '' }}>
                 <Text style={{ color: '#F4EFED', fontWeight: 'bold', fontSize: 20 }}>{context.name} </Text>
@@ -147,7 +147,7 @@ export default function Login() {
               </View>
               <Button
                 title='Close'
-                buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 10 }}
+                buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 30 }}
                 onPress={() => { setVisible(false) }}
                 titleStyle={{ color: '#F4EFED', fontSize: 20 }}
               />
