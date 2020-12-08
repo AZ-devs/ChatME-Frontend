@@ -6,13 +6,13 @@ import { Image, Text, Avatar, Divider } from 'react-native-elements';
 
 
 
-export default function Messages(props) {
+export default function Messages() {
   const context = useContext(ChatContext);
-  return props.masgs.map((message, index) => {
+  return context.messages.map((message, index) => {
     if (message.name === context.name) {
       return (
         <View key={`${message.name}+${index}`} style={{ alignItems: 'flex-end' }} >
-          <If condition={index == 0 || props.masgs[index - 1].name !== message.name}>
+          <If condition={index == 0 || context.messages[index - 1].name !== message.name}>
             <Then >
               <Divider style={{ backgroundColor: '#262229', alignSelf: 'stretch'  , marginHorizontal : 45 ,  marginTop : 27 ,marginBottom : 5  }} />
               <View style={styles.message}>
@@ -30,7 +30,7 @@ export default function Messages(props) {
     } else {
       return (
         <View key={`${message.name}+${index}`} >
-          <If condition={index == 0 || props.masgs[index - 1].name !== message.name}>
+          <If condition={index == 0 || context.messages[index - 1].name !== message.name}>
             <Then>
               <Divider style={{ backgroundColor: '#262229' , alignSelf: 'stretch'  , marginHorizontal : 45 , marginTop : 27 , marginBottom : 5 }} />
               <View style={styles.message}>

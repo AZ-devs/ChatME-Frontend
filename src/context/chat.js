@@ -10,6 +10,7 @@ function ChatProvider(props) {
   const [rooms, setRooms] = useState([])
   const [roomID, setRoomID] = useState('');
   const [loading,setLoading] = useState(false)
+  const [messages, setMessages] = useState([])
   // const [messages, setMessages] = useState([])
 
 
@@ -17,7 +18,7 @@ function ChatProvider(props) {
 
 
 
-  const state = { name, setName, avatar, setAvatar, firstTime, setFirstTime, rooms, setRooms, roomID, setRoomID,loading,setLoading };
+  const state = { name, setName, avatar, setAvatar, firstTime, setFirstTime, rooms, setRooms, roomID, setRoomID,loading,setLoading,messages, setMessages };
 
   return (
     <ChatContext.Provider value={state}>

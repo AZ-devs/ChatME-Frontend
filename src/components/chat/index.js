@@ -1,31 +1,32 @@
 // import io from 'socket.io-client';
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, View, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { StyleSheet, TouchableHighlight, View, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { ChatContext } from '../../context/chat';
-import { Button } from 'react-native';
+// import { Button } from 'react-native';
 import { socket } from '../../context/socket'
 import DismissKeyboard from '../../util/keyboard';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
-import { Text, Icon } from 'react-native-elements';
+import { Text, Icon, Header, Overlay, Input, Button } from 'react-native-elements';
 import Messages from './messages';
 import Online from './online';
 import { If } from 'react-if'
 
-import { I18nManager} from 'react-native';
+import { I18nManager } from 'react-native';
 I18nManager.allowRTL(false);
 
 export default function Chat({ navigation }) {
   const [onlineVisible, setOnlineVisible] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([])
   const [keyboardView, setKeyboardView] = useState(false)
+  const [visible, setVisible] = useState(false);
 
 
   const context = useContext(ChatContext);
 
   useEffect(() => {
+    socket.emit('getMsg',(context.roomID))
     socket.on('messages', (payload) => {
-      setMessages(payload);
+      context.setMessages(payload);
     })
 
     navigation.addListener('beforeRemove', (e) => {
@@ -35,8 +36,9 @@ export default function Chat({ navigation }) {
 
     Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
     Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
-
+    context.setLoading(false)
     return () => {
+      context.setMessages([])
       Keyboard.removeListener("keyboardDidShow", _keyboardDidShow);
       Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
     };
@@ -52,41 +54,95 @@ export default function Chat({ navigation }) {
 
 
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Button onPress={() => {
-          setOnlineVisible(true)
-        }
-        } title="online" />
-      ),
-    });
-  }, [onlineVisible]);
+  // React.useLayoutEffect(() => {
+  //   navigation.setOptions({
+  //     headerRight: () => (
+  //       <Button onPress={() => {
+  //         setOnlineVisible(true)
+  //       }
+  //       } title="online" />
+  //     ),
+  //   });
+  // }, [onlineVisible]);
+
+  function OnlineP() {
+    return (
+      <TouchableHighlight underlayColor='transparent'  onPress={() => setVisible(true)}>
+        <Icon
+          name='group'
+          color='#F4EFED'
+          background='red'
+          size={32}
+        />
+      </TouchableHighlight>
+    )
+  }
+
+  function Back() {
+    return (
+      <TouchableHighlight underlayColor='transparent'  onPress={() => navigation.goBack()}>
+        <Icon
+          // reverse
+          containerStyle={{transform: [{rotateY: '180deg'}]}}
+          name='exit-to-app'
+          type='material-icons'
+          color='#F4EFED'
+          background='red'
+          size={32}
+        />
+      </TouchableHighlight>
+    )
+  }
 
   return (
     < KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.container} >
       <View style={styles.container}>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={onlineVisible}
-          onRequestClose={() => {
-            Alert.alert("Modal has been closed.");
+        <Header
+          statusBarProps={{ barStyle: 'light-content' }}
+          placement="center"
+          barStyle="light-content" // or directly
+          rightComponent={<OnlineP />}
+          leftComponent={<Back />}
+          centerComponent={{ text: 'Rooms', style: { color: '#F4EFED', fontSize: 24 } }}
+          containerStyle={{
+            backgroundColor: '#262229',
+            justifyContent: 'space-around',
           }}
-        >
-          <View style={styles.modalView}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => {
-              setOnlineVisible(false)
-            }}>
-              <Text>X</Text>
-            </TouchableOpacity>
-            <Online />
+        />
+
+        <Overlay overlayStyle={{ borderRadius: 12, borderWidth: 1, paddingHorizontal: 25, paddingVertical: 10, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={visible} onBackdropPress={() => { setVisible(false) }}>
+          <View style={{ alignItems: 'center' }}>
+
+            <View style={{ marginBottom: 20, justifyContent: 'space-between', flexDirection: 'row', alignSelf: 'stretch' }}>
+              <Text></Text>
+              <Text style={{ color: '#F4EFED', fontWeight: 'bold', fontSize: 20 }}>Online People</Text>
+              {/* <Icon
+                name='close'
+                type='font-awesome'
+                color='#D63C30'
+                onPress={() => setVisible(false)}
+              /> */}
+              <Text></Text>
+            </View>
+            <View style={{ height: 300, width: 260, alignItems: 'center' }}>
+              <InvertibleScrollView>
+                <Online />
+
+              </InvertibleScrollView>
+            </View>
+            <Button
+              title='Close'
+              buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 20 }}
+              onPress={() => {
+                setVisible(false)
+              }}
+              titleStyle={{ color: '#F4EFED', fontSize: 20 }}
+            />
           </View>
-        </Modal>
+        </Overlay>
 
         <InvertibleScrollView style={styles.chatView} inverted>
-          <Messages masgs={messages} />
+          <Messages />
         </InvertibleScrollView>
 
         <View style={styles.form}>
@@ -110,9 +166,9 @@ export default function Chat({ navigation }) {
 
           </TouchableOpacity>
         </View>
-        <If condition={keyboardView}>
+        {/* <If condition={keyboardView}>
           <View style={styles.form}></View>
-        </If>
+        </If> */}
 
       </View>
     </KeyboardAvoidingView >
@@ -125,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4EFED',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    // marginTop: 20,
   },
   modalView: {
     fontSize: 20,

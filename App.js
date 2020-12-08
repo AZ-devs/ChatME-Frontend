@@ -40,28 +40,12 @@ export default function App() {
             <Stack.Screen name="Home" options={{
               title: 'Home',
             }} component={Home} options={{ headerShown: false }} />
-            {/* <Stack.Screen name="userLogin" options={{
-            title: 'User Login',
-          }} component={userLogin} options={{ headerShown: false }} />
-
-          <Stack.Screen name="Rooms" options={{
-            title: 'Rooms'
-          }} component={Rooms} /> */}
-            {/* <Stack.Screen name="Chat" options={{
-            title: 'Chat',
-            headerRight: () => (
-              <Button
-                onPress={() => alert('This is a button!')}
-                title="online"
-                color="#fff"
-              />
-            ),
-          }} component={Chat} /> */}
             <Stack.Screen
               name="Chat"
               component={Chat}
               options={{
-                title: 'Chat'
+                title: 'Chat',
+                headerShown: false
               }}
             />
           </Stack.Navigator>

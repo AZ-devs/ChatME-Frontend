@@ -23,7 +23,7 @@ export default function Rooms(props) {
   const navigation = useNavigation();
 
   useEffect(() => {
-
+    socket.emit('rooms',{})
     socket.on('lobby', (payload) => {
       context.setRooms(payload)
     })
@@ -40,6 +40,7 @@ export default function Rooms(props) {
       socket.off('joinLocked');
       socket.off('createdRoom');
     })
+    context.setLoading(false)
   }, []);
 
   function createRoom() {
@@ -51,8 +52,9 @@ export default function Rooms(props) {
   function List({ item }) {
     return (
       <View style={{ flex: 1, marginTop: 20, }}>
-        <ListItem containerStyle={{ backgroundColor: '#F4EFED',alignItems:'flex-end',borderRadius:40,borderColor:'#262229',borderBottomWidth:2.32 }} onPress={() => {
+        <ListItem underlayColor='#F4EFED' containerStyle={{ backgroundColor: '#F4EFED',alignItems:'flex-end',borderRadius:40,borderColor:'#262229',borderBottomWidth:2.32 }} onPress={() => {
           if (!item.islocked) {
+            context.setLoading(true)
             const payload = { roomID: item._id, name: context.name, avatar: context.avatar, password: '' }
             socket.emit('join', payload)
             context.setRoomID(item._id)
@@ -87,11 +89,12 @@ export default function Rooms(props) {
 
   function AddRoom() {
     return (
-      <TouchableHighlight onPress={() => setVisible(true)}>
+      <TouchableHighlight underlayColor='transparent'  onPress={() => setVisible(true)}>
         <Icon
           name='add-circle'
           color='#F4EFED'
           background='red'
+          underlayColor='#F4EFED'
           size={32}
         />
       </TouchableHighlight>
@@ -107,11 +110,11 @@ export default function Rooms(props) {
         rightComponent={<AddRoom />}
         centerComponent={{ text: 'Rooms', style: { color: '#F4EFED', fontSize: 24 } }}
         containerStyle={{
-          backgroundColor: '#D63C30',
+          backgroundColor: '#262229',
           justifyContent: 'space-around',
         }}
       />
-      <Loading />
+      {/* <Loading /> */}
       <Overlay overlayStyle={{ borderRadius: 12, borderWidth: 1, borderColor: '#837B79', justifyContent: 'center', alignItems: 'center', backgroundColor: '#262229' }} isVisible={visible} onBackdropPress={() => { setVisible(false) }}>
         <View style={{ alignItems: 'center' }}>
 
@@ -185,6 +188,7 @@ export default function Rooms(props) {
             title='Join'
             buttonStyle={{ backgroundColor: '#D63C30', width: 130, height: 40, marginTop: 10 }}
             onPress={() => {
+              context.setLoading(true)
               const payload = { roomID: context.roomID, name: context.name, avatar: context.avatar, password }
               socket.emit('join', payload)
               setModalVisible(false)

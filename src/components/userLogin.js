@@ -6,10 +6,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { socket } from '../context/socket'
 import * as Random from 'expo-random';
 import { uriToBlob, uploadToFirebase, imageHandler } from '../util/upload'
-import { Image, Text, Input, Avatar, Button, Overlay } from 'react-native-elements';
+import { Image, Text, Input, Avatar, Button, Overlay, Header } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon2 from 'react-native-vector-icons/MaterialIcons';
 import { If } from 'react-if'
+import Loading from './loading'
 
 export default function Login() {
   const [keyboardView, setKeyboardView] = useState(false)
@@ -44,18 +45,29 @@ export default function Login() {
         </View>
       </View> */}
   return (
-
-
-
     < KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.container} >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {/* <Loading /> */}
         <View style={styles.container}>
-          <If condition={!keyboardView}>
+          <Header
+            statusBarProps={{ barStyle: 'light-content' }}
+            placement="center"
+            barStyle="light-content" // or directly
+            centerComponent={<Image
+              source={{ uri: 'https://www.freelogodesign.org/download/file?id=12b62204-dd65-4e69-9ed6-a6b59552af05_200x200.png' }}
+              style={{ marginTop: 20, width: 90, height: 90 }}
+            />}
+            containerStyle={{
+              backgroundColor: '#F4EFED',
+              justifyContent: 'space-around',
+            }}
+          />
+          {/* <If condition={!keyboardView}>
             <Image
               source={{ uri: 'https://www.freelogodesign.org/download/file?id=12b62204-dd65-4e69-9ed6-a6b59552af05_200x200.png' }}
               style={{ marginTop: 20, width: 200, height: 200 }}
             />
-          </If>
+          </If> */}
 
           <View style={styles.form}>
             <TouchableOpacity style={{ alignItems: 'flex-end' }} onPress={async () => {
@@ -92,41 +104,6 @@ export default function Login() {
               }
             />
           </View>
-          {/* <TextInput
-        style={{ height: 40, width: '80%', borderColor: 'gray', borderWidth: 1 }}
-        onChangeText={text => context.setName(text)}
-      /> */}
-          {/* <Text style={{ marginTop: 25 }}>Avatar</Text> */}
-
-          {/* <TouchableOpacity onPress={async () => {
-        if (context.name !== '') {
-          socket.on('auth', async (payload) => {
-            if (payload.check) {
-              const fileExtension = payload.image.split('.').pop();
-              let uuid = Random.getRandomBytes(4);
-              let name = ''
-              uuid.forEach((item) => {
-                name += item;
-              })
-              const fileName = `${name}.${fileExtension}`;
-
-              uriToBlob(payload.image)
-                .then((blob) => uploadToFirebase(blob, fileName, fileExtension)).then(async (uri) => {
-                  await AsyncStorage.setItem('name', context.name)
-                  context.setAvatar(uri)
-                  await AsyncStorage.setItem('avatar', uri)
-                  context.setFirstTime('Rooms')
-                })
-            } else {
-              console.log('exist name')
-            }
-          })
-          socket.emit('auth', { username: context.name, image: context.avatar })
-        }
-      }}
-        style={styles.appButtonContainer}>
-        <Text style={styles.appButtonText}>Start</Text>
-      </TouchableOpacity> */}
           <Button
             title="Go Online"
             raised
@@ -137,6 +114,7 @@ export default function Login() {
               if (context.name !== '') {
                 socket.on('auth', async (payload) => {
                   if (payload.check) {
+                    context.setLoading(true)
                     const fileExtension = payload.image.split('.').pop();
                     let uuid = Random.getRandomBytes(4);
                     let name = ''
