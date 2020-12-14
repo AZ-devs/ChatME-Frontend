@@ -2,15 +2,13 @@
 
 Real-time event-driven chat application
 
-## Video
-
-https://youtu.be/0AN4eFHFttM
 
 ### Author: Abdallah Zakaria & Abdulhakim Zatar
 
 ### Links and Resources
 - [Back-end](https://github.com/AZ-devs/ChatME-Backend)
 - [Front-end](https://github.com/AZ-devs/ChatME-Frontend)
+- [Video](https://youtu.be/0AN4eFHFttM)
 
 ### Setup
 
